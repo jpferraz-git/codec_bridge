@@ -6,27 +6,25 @@ f = "file.txt"
 
 
 def convertCodePoint(text):
-    code_point = [ord(c) for c in text]
-    return code_point
-
+    encoding = text.encode('utf-8')
+    code_point = [format(c, '08b') for c in encoding]
+    append = [f"b'{c}'" for c in code_point]
+    print(code_point)
+    return append
 
 convertCodePoint(text)
 
-
 def writeFile(text):
-    code = convertCodePoint(text)
+    enconding = text.encode('utf-8')
     with open(f, 'wb') as file:
-        for item in code:
-            file.write(item)
+        file.write(enconding)
 
 
 writeFile(text)
 
-
 def readFile(f):
     with open(f, 'rb') as file:
         print(file.read())
-
 
 readFile(f)
 
