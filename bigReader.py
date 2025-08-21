@@ -1,25 +1,54 @@
 import datetime
-import kagglehub
+import os.path
+import time
+import timeit
+from asyncio import timeout
+from turtledemo.forest import start
 
 # Download latest version
-path = kagglehub.dataset_download("tavuksuzdurum/user-animelist-dataset")
-
-print("Path to dataset files:", path)
-f = "sptech.txt"
-
-def createFile(text):
-    with open(f, 'w') as file:
-        file.write(text * 100_000_000)
 
 
-createFile("Sptech irada - ")
-def reader():
+file_100mb = "sptech100mb.txt"
+file_1gb = "sptech1gb.txt"
+# print(file_size)
+
+matriz = [["quando"],["Previdencia"],[12323123], ["eles se chaamvam tenryubitoos"], ["$@#%@#@!"], ["porque fez isso comigo?"]]
+path_matriz = "aaa.csv"
+def createCsv(values):
+    with open(path_matriz, 'w') as file:
+        while os.path.getsize(path_matriz) < 1_073_741_824:
+            for line in matriz:
+                file.write(line[0])
+                file.flush()
+                os.fsync(file.fileno())
+createCsv(matriz)
+
+def createFile100MB(text):
+    with open(file_100mb, 'w') as file:
+        while os.path.getsize(file_100mb) < 1_000_000:
+            file.write(text * 1024)
+            file.flush()
+            os.fsync(file.fileno())
+
+def createFile1Gb(text):
+    with open(file_1gb, 'w') as file:
+        while os.path.getsize(file_1gb) < 1_073_741_824:
+            file.write(text * 1024 * 1024)
+            file.flush()
+            os.fsync(file.fileno())
+
+createFile100MB("E quando eu sair daqui. SAIBAM QUE EU VOU, MATAR TODOS VOCÊS")
+# createFile1Gb("Sptech irada - ")
+
+
+def reader(f):
+    start_time = time.perf_counter()
+
     with open(f, 'r') as file:
-        print(f"Start time: {datetime.datetime.now()}")
-        file.read(101)
-        print(file.read(1))
+        file.read()
+    end_time = time.perf_counter()
+    time_runned = end_time - start_time
+    print(f"Processing Time: {time_runned:.4f}")
 
-        print(file.read(10))
-    print(f"Finish TIme: {datetime.datetime.now()}")
-
-reader()
+reader(file_100mb)
+reader(file_1gb)
