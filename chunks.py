@@ -1,5 +1,8 @@
 import datetime
+import time
 
+
+print(time.process_time())
 chunk = 512
 
 sentence = [
@@ -18,7 +21,7 @@ def fileWriter(f):
 
 def fileReader(f):
     with open(f, 'r', chunk) as file:
-        print(file.read())
+        file.read()
 
 fileReader(f)
 
