@@ -21,7 +21,7 @@ def gerar_csv(path, tamanho_mb, num_colunas=50):
 
     memoria_inicial = memoria_atual()
 
-    with open(path, "w", encoding="utf-8") as file:
+    with open(path, "w", encoding="big5") as file:
         file.write(header)
 
         while os.path.getsize(path) < tamanho_alvo:
@@ -83,13 +83,13 @@ def write_csv_in_chunks(file_path, matriz, file_size, chunk_size = 1024):
 
 if __name__ == "__main__":
 
-    # gerar_csv("testes_performance/1gb.csv", 1000)
+    gerar_csv("repository/ISO.csv", 100)
 
-    write_csv_in_chunks("testes_performance/100mbChunk.csv",
-    matriz=([["pinto", "alavanca"],
-            ["saco", "marreta"]
-            ]),
-    file_size=100,
-    chunk_size=1024)
+    # write_csv_in_chunks("testes_performance/100mbChunk.csv",
+    # matriz=([["pinto", "alavanca"],
+    #         ["saco", "marreta"]
+    #         ]),
+    # file_size=100,
+    # chunk_size=1024)
 
     # benchmark_streaming("testes_performance/10gb.csv")
