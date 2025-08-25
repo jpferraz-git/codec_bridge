@@ -5,7 +5,6 @@ import os.path
 import chardet
 import charset_normalizer
 
-
 # String with unknown encoding
 path = "sptech1gb.txt"
 
