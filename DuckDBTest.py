@@ -1,71 +1,45 @@
 import duckdb
-import pandas as pd
-import requests
-import re
 import os
+from charset_normalizer import from_path
 
+# --- CONFIGURAÇÃO ---
+path = "csv_encodings"
 
-# --- PASSO 1: FUNÇÃO PARA OBTER A LISTA ---
-def obter_lista_de_aliases_icu():
-    url = 'https://raw.githubusercontent.com/duckdb/duckdb-encodings/main/src/icu_aliases.cpp'
+# --- CONEXÃO COM O DUCKDB ---
+con = duckdb.connect(database=":memory:")
+con.execute("INSTALL encodings;")
+con.execute("LOAD encodings;")
+
+# --- LOOP SOBRE OS ARQUIVOS CSV ---
+for arquivo in os.listdir(path):
+    if not arquivo.endswith(".csv"):
+        continue
+
+    caminho_arquivo = os.path.join(path, arquivo)
+    nome_tabela = os.path.splitext(arquivo)[0]  # remove o .csv do final
+
+    # --- DETECTAR ENCODING ---
+    resultado_charset = from_path(caminho_arquivo)
+    if resultado_charset is None:
+        print(f"❌ Não foi possível detectar encoding para {arquivo}")
+        continue
+
+    encoding_detectado = resultado_charset.encoding
+    print(f"\n📂 Arquivo: {arquivo}")
+    print(f"🔍 Encoding detectado: {encoding_detectado}")
+
+    # --- TENTAR INSERIR NO DUCKDB ---
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        aliases = re.findall(r'\{\s*"alias":\s*"([^"]+)"', response.text)
-        nomes = re.findall(r'"name":\s*"([^"]+)"\s*\}', response.text)
-        return sorted(list(set(aliases + nomes)))
+        query = f"""
+            CREATE OR REPLACE TEMP TABLE "{nome_tabela}" AS
+            SELECT * FROM read_csv('{caminho_arquivo}', encoding='{encoding_detectado}', AUTO_DETECT=TRUE)
+        """
+        con.execute(query)
+        print(f"✅ Sucesso ao carregar {arquivo} como tabela '{nome_tabela}'")
+
     except Exception as e:
-        print(f"Falha ao obter lista: {e}")
-        return []
+        print(f"❌ Falha ao carregar {arquivo} com encoding '{encoding_detectado}': {e}")
 
-
-# --- PASSO 2: CRIAR ARQUIVO DE TESTE ---
-data = {'coluna': ['maçã', 'coração', 'pêssego']}
-df = pd.DataFrame(data)
-encoding_de_teste = 'windows-1252'
-caminho_arquivo = 'test.csv'
-df.to_csv(caminho_arquivo, index=False, encoding=encoding_de_teste)
-
-# --- PASSO 3: PREPARAR DUCKDB ---
-con = duckdb.connect(database=':memory:')
-con.execute("INSTALL icu;")
-con.execute("LOAD icu;")
-
-# --- PASSO 4: EXECUTAR OS TESTES ---
-encodings_suportados = []
-encodings_falhos = []
-
-lista_encodings = obter_lista_de_aliases_icu()
-if not lista_encodings:
-    print("Não foi possível obter a lista de encodings. Abortando.")
-else:
-    print(f"\n--- INICIANDO TESTE COM {len(lista_encodings)} ENCODINGS ---")
-    for encoding_name in lista_encodings:
-        try:
-            # Tenta ler o CSV usando o encoding da vez
-            query = f"SELECT * FROM read_csv('{caminho_arquivo}', encoding='{encoding_name}')"
-            result = con.execute(query).fetchall()
-
-            # Verificação extra: o resultado faz sentido?
-            if 'maçã' in result[0][0]:
-                print(f"✅ SUCESSO: '{encoding_name}'")
-                encodings_suportados.append(encoding_name)
-            else:
-                # Ocorreu quando o encoding não deu erro, mas decodificou errado.
-                print(f"⚠️ ATENÇÃO: '{encoding_name}' não deu erro, mas o resultado é inválido.")
-                encodings_falhos.append(encoding_name)
-
-        except Exception as e:
-            # Se o DuckDB lançar uma exceção, o encoding é inválido.
-            print(f"❌ FALHA: '{encoding_name}'")
-            encodings_falhos.append(encoding_name)
-
-    print("\n--- RESULTADO FINAL ---")
-    print(f"\n✅ Encodings Suportados com Sucesso ({len(encodings_suportados)}):")
-    print(encodings_suportados)
-
-    print(f"\n❌ Encodings que Falharam ou retornaram dados incorretos ({len(encodings_falhos)}):")
-    print(encodings_falhos)
-
-# Limpa o arquivo de teste
-os.remove(caminho_arquivo)
+# --- OPCIONAL: LISTAR TABELAS CARREGADAS ---
+print("\n--- Tabelas temporárias criadas no DuckDB ---")
+print(con.execute("SHOW TABLES").fetchall())

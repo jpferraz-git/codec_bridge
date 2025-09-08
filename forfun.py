@@ -31,20 +31,30 @@
 numero = 121
 
 multiplicador = 1
-# while int(numero) / 10 > 0:
-#     multiplicador *= 10
-#
-#     numero_normal_decimal = numero / multiplicador
-#
-#     primeiro_numero = int(numero * 10)
-#
-#      #ultimo_numero
-#     index_numero = int(numero / 10)
-#     ultimo_numero = int((index_numero- int(index_numero)) * 10)
-#
-#     if (numero / 10 != ultimo_numero):
-#         return False
-#     numero = int(numero / 10)
+
+if int(numero) / 10 > 0:
+     pass
+
+def divisor(numero):
+    divisor = 0
+
+    while int(numero) / 10 > 0:
+        divisor *= 10
+
+    return divisor
+
+
+    # numero_normal_decimal = numero / multiplicador
+    #
+    # primeiro_numero = int(numero * 10)
+    #
+    #  #ultimo_numero
+    # index_numero = int(numero / 10)
+    # ultimo_numero = int((index_numero- int(index_numero)) * 10)
+    #
+    # if (numero / 10 != ultimo_numero):
+    #     return False
+    # numero = int(numero / 10)
 
 #
 # return True
@@ -68,4 +78,23 @@ def addTwoNumbers(array1, array2):
      return new_array
 
 
-addTwoNumbers([1,2], [3,4])
+def aaa():
+    nums = [2,7,9,11]
+    target = 18
+    nums_set = sorted(set(nums))
+    target_index = []
+    i = 0
+    j = len(nums) - 1
+
+    while True:
+        if nums_set[i] + nums_set[j] == target:
+            target_index.append([i + 1, j])
+            print(target_index)
+            return target_index
+
+        elif nums[i] + nums[j] < target:
+            i += 1
+        elif nums[i] + nums[j] > target:
+            j -= 1
+# addTwoNumbers([1,2], [3,4])
+aaa()
