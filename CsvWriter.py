@@ -34,7 +34,7 @@ killer_chars = {
 # Gerar conteúdo fictício: 10 linhas x 5 colunas
 def gerar_rows(char_exemplo=""):
     # Adiciona o caractere especial na primeira célula de cada linha
-    return [[f"Dado_{i}_{j}{char_exemplo if j == 0 else ''}" for j in range(5)] for i in range(10)]
+    return [[f"Dado_{i}_{j}{char_exemplo if j == 0 else ''}" for j in range(5)] for i in range(1000)]
 
 
 # Gerar os arquivos CSV
