@@ -26,7 +26,6 @@ killer_chars = {
     "big5": "你好",  # Chinês Tradicional
     "windows-1253": "αβ",  # Grego
     "iso-8859-15": "€",  # Símbolo do Euro
-    # UTF-8 e UTF-16 podem conter qualquer coisa, vamos usar um emoji
     "utf-8": "🚀",
     "utf-16": "🚀",
 }
@@ -40,7 +39,7 @@ def gerar_rows(char_exemplo=""):
 
 # Gerar os arquivos CSV
 for enc in encodings:
-    filename = os.path.join(output_dir, f"exemplo_{enc}.csv")
+    filename = os.path.join(output_dir, f"test_{enc}.csv")
 
     # Pega o caractere especial para o encoding atual
     char_especial = killer_chars.get(enc, "")
