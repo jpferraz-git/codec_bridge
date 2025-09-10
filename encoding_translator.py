@@ -3,11 +3,6 @@ import os
 import re
 from Repository.PythonToDuckDB import PYTHON_TO_DUCKDB_ENCODING
 from tests.duckdb_utils import create_table_from_csv
-import charset_normalizer
-import os
-import re
-from Repository.PythonToDuckDB import PYTHON_TO_DUCKDB_ENCODING
-from tests.duckdb_utils import create_table_from_csv
 
 class EncodingDetect:
     def __init__(self, path: str):
@@ -68,7 +63,6 @@ class EncodingDetect:
                 continue
 
             file_path = os.path.join(self.path, f)
-            print("-" * 50)
 
             python_encoding = self.detect_encoding(file_path)
             delimitador = self.detect_delimiter(file_path, encoding=python_encoding)

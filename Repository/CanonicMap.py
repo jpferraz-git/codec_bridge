@@ -9,7 +9,7 @@ MAPA_CANONICO_PARA_ALVO = {
     },
     'latin_1': {
         'python': 'iso-8859-1',
-        'duckdb': 'ibm-819',  # Nome canônico ICU para ISO-8859-1
+        'duckdb': 'ibm-819',
         'spark': 'ISO-8859-1',
         'pandas': 'iso-8859-1',
         'polars': 'latin1',
@@ -25,7 +25,7 @@ MAPA_CANONICO_PARA_ALVO = {
     },
     'windows_1250': {
         'python': 'windows-1250',
-        'duckdb': 'windows-1250-2000',  # Nome completo do ICU
+        'duckdb': 'windows-1250-2000',
         'spark': 'Windows-1250',
         'pandas': 'cp1250',
         'polars': 'windows-1250',
