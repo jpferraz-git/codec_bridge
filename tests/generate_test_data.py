@@ -1,5 +1,3 @@
-# file: tests/generate_test_data.py
-
 import csv
 import os
 
