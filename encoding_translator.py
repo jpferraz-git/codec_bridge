@@ -3,7 +3,7 @@ import os
 import re
 
 # Project-specific modules
-from Repository.PythonToDuckDB import PYTHON_TO_DUCKDB_ENCODING
+from Repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING
 
 class EncodingDetector:
     """
