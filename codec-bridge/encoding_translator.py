@@ -6,7 +6,6 @@ import re
 from Repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING
 
 
-
 def get_duckdb_encoding(python_encoding_name: str) -> str:
     """
     Translates a Python-standard encoding name to the name expected by DuckDB.
@@ -97,6 +96,8 @@ def process_files(directory_path: str) -> list[dict]:
 
     return results
 
+def write_memory_utf8_csv():
+    pass
 
 if __name__ == "__main__":
     import duckdb
@@ -106,8 +107,8 @@ if __name__ == "__main__":
 
     connection = duckdb.connect(database=":memory:")
 
-    # connection.execute("INSTALL icu")
-    # connection.execute("LOAD icu")
+    connection.execute("INSTALL encodings")
+    connection.execute("LOAD encodings")
 
     detector = get_duckdb_encoding(csv_directory_path)
 

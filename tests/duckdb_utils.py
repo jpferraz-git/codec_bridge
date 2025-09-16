@@ -1,5 +1,5 @@
 import os
-def create_table_from_csv(conn, file_path: str, table_name: str, delimiter: str = "|", encoding: str = "utf-8"):
+def create_table_from_csv(conn, file_path: str, table_name: str, delimiter: str, encoding: str = "utf-8"):
     """
     Create a table on DuckDB
     """

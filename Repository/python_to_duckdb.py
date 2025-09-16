@@ -3,6 +3,7 @@ PYTHON_TO_DUCKDB_ENCODING = {
     'utf_8': 'utf-8',
     'utf8': 'utf_8',
     'utf_16': 'utf-16',
+    'UTF-16': 'utf-16',
     'utf_16be': 'utf_16_be',
     'utf_16le': 'utf_16_le',
 
