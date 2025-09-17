@@ -18,16 +18,17 @@ def get_duckdb_encoding(python_encoding_name: str) -> str:
         return 'utf-8'
 
     normalized_name = python_encoding_name.lower()
-    return PYTHON_TO_DUCKDB_ENCODING.get(normalized_name, python_encoding_name)
+    encoding_name = PYTHON_TO_DUCKDB_ENCODING.get(normalized_name, python_encoding_name)
+
 
 def write_memory_utf8_csv(file_path: str, new_csv_file_path: str):
     utf_file_path = 'C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets/test_utf-16_refactor.csv'
     with open(file_path, 'r') as file:
-        with open(utf_file_path ,'w') as a:
+        with open(utf_file_path, 'w') as a:
             for line in file:
                 a.write(line)
 
-def detect_encoding(file_path: str) -> str:
+def detect_encoding(file_path: str, chunk: int = 1000000) -> str:
     """
     Detects the character encoding of a file using charset_normalizer.
 
@@ -35,7 +36,7 @@ def detect_encoding(file_path: str) -> str:
     :return: The detected encoding name as a string.
     """
     with open(file_path, "rb") as file:
-        data_sample = file.read(1000000)
+        data_sample = file.read(chunk)
         result = charset_normalizer.detect(data_sample)
         return result.get("encoding") if result else "utf-8"
 
@@ -108,26 +109,26 @@ if __name__ == "__main__":
     import duckdb
     from tests.duckdb_utils import create_table_from_csv
 
-    csv_directory_path = "C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets/test_utf-16.csv"
+    csv_directory_path = "C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets/"
 
     connection = duckdb.connect(database=":memory:")
 
-    write_memory_utf8_csv(csv_directory_path)
+    # write_memory_utf8_csv(csv_directory_path)
 
-    # connection.execute("INSTALL encodings")
-    # connection.execute("LOAD encodings")
-    #
-    # detector = get_duckdb_encoding(csv_directory_path)
-    #
-    # file_results = process_files(csv_directory_path)
-    #
-    # for result in file_results:
-    #     create_table_from_csv(
-    #         conn=connection,
-    #         file_path=result["path"],
-    #         table_name=result["table_name"],
-    #         delimiter=result["delimiter"],
-    #         encoding=result["duckdb_encoding"]
-    #     )
+    connection.execute("INSTALL encodings")
+    connection.execute("LOAD encodings")
+
+    detector = get_duckdb_encoding(csv_directory_path)
+
+    file_results = process_files(csv_directory_path)
+
+    for result in file_results:
+        create_table_from_csv(
+            conn=connection,
+            file_path=result["path"],
+            table_name=result["table_name"],
+            delimiter=result["delimiter"],
+            encoding=result["duckdb_encoding"]
+        )
 
     connection.close()
