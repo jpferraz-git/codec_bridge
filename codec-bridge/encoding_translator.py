@@ -20,6 +20,13 @@ def get_duckdb_encoding(python_encoding_name: str) -> str:
     normalized_name = python_encoding_name.lower()
     return PYTHON_TO_DUCKDB_ENCODING.get(normalized_name, python_encoding_name)
 
+def write_memory_utf8_csv(file_path: str, new_csv_file_path: str):
+    utf_file_path = 'C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets/test_utf-16_refactor.csv'
+    with open(file_path, 'r') as file:
+        with open(utf_file_path ,'w') as a:
+            for line in file:
+                a.write(line)
+
 def detect_encoding(file_path: str) -> str:
     """
     Detects the character encoding of a file using charset_normalizer.
@@ -96,31 +103,31 @@ def process_files(directory_path: str) -> list[dict]:
 
     return results
 
-def write_memory_utf8_csv():
-    pass
 
 if __name__ == "__main__":
     import duckdb
     from tests.duckdb_utils import create_table_from_csv
 
-    csv_directory_path = "C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets"
+    csv_directory_path = "C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets/test_utf-16.csv"
 
     connection = duckdb.connect(database=":memory:")
 
-    connection.execute("INSTALL encodings")
-    connection.execute("LOAD encodings")
+    write_memory_utf8_csv(csv_directory_path)
 
-    detector = get_duckdb_encoding(csv_directory_path)
-
-    file_results = process_files(csv_directory_path)
-
-    for result in file_results:
-        create_table_from_csv(
-            conn=connection,
-            file_path=result["path"],
-            table_name=result["table_name"],
-            delimiter=result["delimiter"],
-            encoding=result["duckdb_encoding"]
-        )
+    # connection.execute("INSTALL encodings")
+    # connection.execute("LOAD encodings")
+    #
+    # detector = get_duckdb_encoding(csv_directory_path)
+    #
+    # file_results = process_files(csv_directory_path)
+    #
+    # for result in file_results:
+    #     create_table_from_csv(
+    #         conn=connection,
+    #         file_path=result["path"],
+    #         table_name=result["table_name"],
+    #         delimiter=result["delimiter"],
+    #         encoding=result["duckdb_encoding"]
+    #     )
 
     connection.close()
