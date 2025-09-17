@@ -3,7 +3,7 @@ import os
 import re
 
 # Project-specific modules
-from Repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING
+from Repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
 
 
 def get_duckdb_encoding(python_encoding_name: str) -> str:
@@ -18,7 +18,7 @@ def get_duckdb_encoding(python_encoding_name: str) -> str:
         return 'utf-8'
 
     normalized_name = python_encoding_name.lower()
-    encoding_name = PYTHON_TO_DUCKDB_ENCODING.get(normalized_name, python_encoding_name)
+    return PYTHON_TO_DUCKDB_ENCODING.get(normalized_name, python_encoding_name)
 
 
 def write_memory_utf8_csv(file_path: str, new_csv_file_path: str):
@@ -50,7 +50,8 @@ def detect_delimiter(file_path: str, encoding: str = "utf-8") -> str:
     """
     possible_delimiters = [',', ';', '\t', '|']
     detected_delimiter = ','  # Default to comma
-
+    if encoding.lower() in ENCODINGS_UNDERSCORE_CONFLICT:
+        return '|'
     try:
         with open(file_path, 'r', encoding=encoding, errors='replace') as f:
             first_line = f.readline()
