@@ -2,7 +2,6 @@ import charset_normalizer
 import os
 import re
 
-# Project-specific modules
 from Repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
 
 
@@ -20,13 +19,6 @@ def get_duckdb_encoding(python_encoding_name: str) -> str:
     normalized_name = python_encoding_name.lower()
     return PYTHON_TO_DUCKDB_ENCODING.get(normalized_name, python_encoding_name)
 
-
-def write_memory_utf8_csv(file_path: str, new_csv_file_path: str):
-    utf_file_path = 'C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets/test_utf-16_refactor.csv'
-    with open(file_path, 'r') as file:
-        with open(utf_file_path, 'w') as a:
-            for line in file:
-                a.write(line)
 
 def detect_encoding(file_path: str, chunk: int = 1000000) -> str:
     """
@@ -88,7 +80,7 @@ def process_files(directory_path: str) -> list[dict]:
         python_encoding = detect_encoding(file_path)
         delimiter = detect_delimiter(file_path, encoding=python_encoding)
 
-        # Translate encoding for the target tool
+        # Translate encoding for the target enconding case
         duckdb_encoding = get_duckdb_encoding(python_encoding)
 
         # Sanitize filename to create a valid table name
@@ -105,12 +97,17 @@ def process_files(directory_path: str) -> list[dict]:
 
     return results
 
+def write_utf8_csv(file_path: str, new_csv_file_path: str):
+    with open(file_path, 'r') as file:
+        with open(new_csv_file_path, 'w', encoding='utf-8' ) as new_file:
+            for line in file:
+                new_file.write(line)
 
 if __name__ == "__main__":
     import duckdb
     from tests.duckdb_utils import create_table_from_csv
 
-    csv_directory_path = "C:/Users/jpfer/OneDrive/Documentos/ENCODING-ICU-Library/tests/assets/"
+    csv_directory_path = "//tests/assets/"
 
     connection = duckdb.connect(database=":memory:")
 
