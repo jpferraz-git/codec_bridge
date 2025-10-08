@@ -1,4 +1,3 @@
-
 import os
 import duckdb
 from encoding_translator import (
@@ -10,16 +9,16 @@ from encoding_translator import (
 )
 
 # === Step 1: Define the path to your CSV directory ===
-csv_directory = "/home/user/Documents/data/Carga_11-24"
+directory_path = "docs/files"
 
 # === Step 2: Create a DuckDB connection (in-memory or persistent) ===
 con = duckdb.connect(database=":memory:")
 
-# === Step 3: Process all CSV files in the directory ===
+# === Process all CSV files in the directory ===
 print("🔍 Scanning directory for CSV files...")
-file_metadata = process_files(csv_directory)
+file_metadata = process_files(directory_path)
 
-# === Step 4: Load each file into DuckDB using detected metadata ===
+# === Load each file into DuckDB using detected metadata ===
 for file in file_metadata:
     print(f"\n File: {file['filename']}")
     print(f" - Python encoding detected: {file['python_encoding']}")
@@ -53,14 +52,14 @@ for file in file_metadata:
     write_utf8_csv(file["path"], utf8_path)
     print(f" - Converted '{file['filename']}' to UTF-8 → {utf8_path}")
 
-# === Step 7: Demonstrate encoding detection ===
+# === Demonstrate encoding detection ===
 print("\n🧪 Encoding Detection Demo:")
 sample_path = file_metadata[0]["path"] if file_metadata else None
 if sample_path:
     encoding = detect_encoding(sample_path)
     print(f" - Encoding detected for '{os.path.basename(sample_path)}': {encoding}")
 
-# === Step 8: Demonstrate DuckDB encoding translation ===
+# === Demonstrate DuckDB encoding translation ===
 
 test_encodings = ["utf-8", "iso-8859-1", "windows-1252", "latin1", "ascii", "unknown-encoding"]
 for enc in test_encodings:
