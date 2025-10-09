@@ -1,12 +1,10 @@
-# file: tests/generate_test_data.py
-
 import csv
 import os
 
 
 DEFAULT_OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "assets")
 
-def generate_csv_test_files(output_dir: str = DEFAULT_OUTPUT_DIR, num_rows: int = 100):
+def generate_csv_test_files(output_dir: str = DEFAULT_OUTPUT_DIR, num_rows: int = 1000):
     """
     Generates a suite of CSV files with different encodings and characters
     to be used as assets for running tests.
@@ -38,7 +36,7 @@ def generate_csv_test_files(output_dir: str = DEFAULT_OUTPUT_DIR, num_rows: int 
 
     def generate_rows(example_char=""):
         # Add the special character to the first cell of each row
-        return [[f"Data_{i}_{j}{example_char if j == 0 else ''}" for j in range(5)] for i in range(num_rows)]
+        return [[f"Data_{i}_{j}{example_char if j == 0 else ''}" for j in range(10)] for i in range(num_rows)]
 
     # Loop through encodings and generate files
     for enc in encodings_to_test:

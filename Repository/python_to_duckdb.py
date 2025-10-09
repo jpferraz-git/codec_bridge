@@ -3,8 +3,9 @@ PYTHON_TO_DUCKDB_ENCODING = {
     'utf_8': 'utf-8',
     'utf8': 'utf_8',
     'utf_16': 'utf-16',
-    'utf_16be': 'utf_16_be',
-    'utf_16le': 'utf_16_le',
+    'utf-16': 'utf-16',
+    'utf_16be': 'utf-16-be',
+    'utf_16le': 'utf-16-le',
 
     # --- ASCII ---
     'ascii': 'ascii',
@@ -68,4 +69,12 @@ PYTHON_TO_DUCKDB_ENCODING = {
     'euc-kr': 'euc_kr',
     'cp949': 'cp949',
     'johab': 'johab',
+}
+
+ENCODINGS_UNDERSCORE_CONFLICT = {
+    'shift_jis',
+    'cp932',
+    'big5',
+    'gbk',
+    'gb2312',
 }

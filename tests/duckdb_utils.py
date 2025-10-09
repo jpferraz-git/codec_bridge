@@ -1,13 +1,12 @@
 import os
-import duckdb
-def create_table_from_csv(conn, file_path: str, table_name: str, delimiter: str, encoding: str):
+def create_table_from_csv(conn, file_path: str, table_name: str, delimiter: str = '|', encoding: str = "utf-8"):
     """
-    Cria uma tabela no DuckDB a partir de um CSV, usando os parâmetros corretos.
+    Create a table on DuckDB
     """
     print(f"Processando '{os.path.basename(file_path)}': Tabela='{table_name}', Encoding='{encoding}', Delim='{delimiter}'")
     try:
         conn.sql(f"""
-                CREATE OR REPLACE TABLE "{table_name}" AS
+                CREATE OR REPLACE TEMP TABLE "{table_name}" AS
                 (SELECT * FROM 
                 read_csv('{file_path}',
                 delim='{delimiter}',
