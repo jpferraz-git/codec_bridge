@@ -24,3 +24,13 @@ This mismatch can break ingestion pipelines, especially when dealing with large 
 
 ```bash
 pip install codec_bridge
+```
+
+## 🔧 Requirements
+
+This library depends on:
+
+- `duckdb` (>=1.3.2)
+- `charset-normalizer` (>=3.4.2)
+
+These will be installed automatically when using `pip install codec_bridge`.
