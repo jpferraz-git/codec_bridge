@@ -1,12 +1,12 @@
 [project]
 name = "codec_bridge"
-version = "0.1.0
-description = "Detecta encoding e delimitador de arquivos CSV para uso com DuckDB"
+version = "0.1.0"
+description = "Detect encoding from CSV files and return the accepted case format for analytical tools (currently supports DuckDB)"
 authors = [
     { name = "João Pedro Ferraz Bezerra", email = "jpferraz554@gmail.com" }
 ]
 license = "MIT"
-readme = "README.md
+readme = "README.md"
 requires-python = ">=3.10"
 
 dependencies = [
