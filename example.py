@@ -1,69 +1,47 @@
-import os
+"""
+example.py — How to use codec_bridge
+
+This script demonstrates how to:
+1. Detect the encoding of CSV files using Python.
+2. Translate the detected encoding to the correct format expected by DuckDB.
+3. Automatically load CSV files into DuckDB using the translated encoding.
+"""
+
 import duckdb
-from encoding_translator import (
-    detect_encoding,
-    get_duckdb_encoding,
-    detect_delimiter,
-    process_files,
-    write_utf8_csv
-)
+from encoding_translator import process_files, get_duckdb_encoding, detect_encoding
 
-# === Step 1: Define the path to your CSV directory ===
-directory_path = "docs/files"
+# Path to the directory containing CSV files
+csv_directory = "/path/to/your/csvs"
 
-# === Step 2: Create a DuckDB connection (in-memory or persistent) ===
+# Create a DuckDB connectio
 con = duckdb.connect(database=":memory:")
 
-# === Process all CSV files in the directory ===
-print("🔍 Scanning directory for CSV files...")
-file_metadata = process_files(directory_path)
+# Process all CSV files and extract metadata
+files = process_files(csv_directory)
 
-# === Load each file into DuckDB using detected metadata ===
-for file in file_metadata:
+# For each file, use get_duckdb_encoding to fix encoding mismatch
+for file in files:
     print(f"\n File: {file['filename']}")
-    print(f" - Python encoding detected: {file['python_encoding']}")
-    print(f" - DuckDB encoding mapped: {file['duckdb_encoding']} (via get_duckdb_encoding)")
-    print(f" - Delimiter detected: '{file['delimiter']}'")
-    print(f" - Target DuckDB table name: {file['table_name']}")
+    print(f" - Python detected encoding: {file['python_encoding']}")
 
-    # Load into DuckDB
+    # Core logic: translate encoding using the main method
+    duckdb_encoding = get_duckdb_encoding(file['python_encoding'])
+    print(f" - DuckDB-compatible encoding: {duckdb_encoding}")
+
+    print(f" - Detected delimiter: '{file['delimiter']}'")
+    print(f" - Target table name: {file['table_name']}")
+
+    # Load the file into DuckDB using the translated encoding
     con.execute(f"""
-        CREATE TABLE {file['table_name']} AS
+        CREATE TEMP TABLE {file['table_name']} AS
         SELECT *
         FROM read_csv_auto(
             '{file["path"]}',
             delim='{file["delimiter"]}',
-            encoding='{file["duckdb_encoding"]}'
+            encoding='{duckdb_encoding}'
         )
     """)
 
-print("\n All files have been successfully loaded into DuckDB.")
-
-# === Run a sample query on the first table ===
-if file_metadata:
-    sample_table = file_metadata[0]["table_name"]
-    print(f"\n🔎 Sample query on '{sample_table}':")
-    df = con.execute(f"SELECT * FROM {sample_table} LIMIT 5").fetchdf()
-    print(df)
-
-# === Demonstrate UTF-8 conversion ===
-for file in file_metadata:
-    utf8_path = os.path.join(csv_directory, f"utf8_{file['filename']}")
-    write_utf8_csv(file["path"], utf8_path)
-    print(f" - Converted '{file['filename']}' to UTF-8 → {utf8_path}")
-
-# === Demonstrate encoding detection ===
-print("\n🧪 Encoding Detection Demo:")
-sample_path = file_metadata[0]["path"] if file_metadata else None
-if sample_path:
-    encoding = detect_encoding(sample_path)
-    print(f" - Encoding detected for '{os.path.basename(sample_path)}': {encoding}")
-
-# === Demonstrate DuckDB encoding translation ===
-
-test_encodings = ["utf-8", "iso-8859-1", "windows-1252", "latin1", "ascii", "unknown-encoding"]
-for enc in test_encodings:
-    duckdb_enc = get_duckdb_encoding(enc)
-    print(f" - Python encoding '{enc}' → DuckDB encoding '{duckdb_enc}'")
+print("\n All files successfully loaded into DuckDB.")
 
 con.close()
