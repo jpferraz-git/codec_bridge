@@ -4,10 +4,11 @@ A Python utility library that bridges encoding mismatches between Python and Duc
 
 ## 🔍 Motivation
 
-DuckDB recently introduced the `encodings` extension, supporting over a thousand character encodings. However, Python often detects encodings using a format or casing that DuckDB does not accept directly. For example:
+DuckDB recently introduced the `encodings` extension, supporting over a thousand character encodings. However, Python often detects encodings using a format or casing that DuckDB does not accept directly. 
 
+For example:
 - Python detects: `ISO-8859-1`
-- DuckDB expects: `iso8859-1`
+- DuckDB expects: `latin`
 
 This mismatch can break ingestion pipelines, especially when dealing with large volumes of raw CSV files from diverse sources. The goal of this library is to act as a **bridge**, translating Python-standard encoding names into DuckDB-compatible formats.
 
