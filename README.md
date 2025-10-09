@@ -23,4 +23,4 @@ This mismatch can break ingestion pipelines, especially when dealing with large 
 ## 📦 Installation
 
 ```bash
-pip install duckdb charset-normalizer
+pip install codec_bridge
