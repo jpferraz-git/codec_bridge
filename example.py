@@ -8,7 +8,7 @@ This script demonstrates how to:
 """
 
 import duckdb
-from encoding_translator import process_files, get_duckdb_encoding, detect_encoding
+from src.encoding_translator import process_files, get_duckdb_encoding
 
 # Path to the directory containing CSV files
 csv_directory = "/path/to/your/csvs"
