@@ -11,10 +11,10 @@ setup(
     url='https://github.com/jpferraz-git/codec_bridge',
     packages=find_packages(),
     classifiers=[
-        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Operating System :: OS Independent',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: Linux :: Ubuntu',
     ],
-    python_requires='>=3.11',
+    python_requires='>=3.12',
 )
