@@ -2,7 +2,7 @@ import charset_normalizer
 import os
 import re
 
-from Repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
+from repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
 
 
 def get_duckdb_encoding(python_encoding_name: str) -> str:
