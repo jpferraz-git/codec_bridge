@@ -98,8 +98,19 @@ def process_files(directory_path: str) -> list[dict]:
     return results
 
 def write_utf8_csv(file_path: str, new_csv_file_path: str):
+
+    """
+    Rewrites a CSV file using UTF-8 encoding.
+
+    This method is intended for cases where, even after DuckDB's encoding detection,
+    the file is still incorrectly interpreted when inserted into the database.
+
+    :param file_path: Path to the original CSV file.
+    :param new_csv_file_path: Path where the UTF-8 encoded CSV will be saved.
+    :return: None. The UTF-8 encoded file is written to disk.
+    """
     with open(file_path, 'r') as file:
-        with open(new_csv_file_path, 'w', encoding='utf-8' ) as new_file:
+        with open(new_csv_file_path, 'w', encoding='utf-8') as new_file:
             for line in file:
                 new_file.write(line)
 
@@ -110,8 +121,6 @@ if __name__ == "__main__":
     csv_directory_path = "//tests/assets/"
 
     connection = duckdb.connect(database=":memory:")
-
-    # write_memory_utf8_csv(csv_directory_path)
 
     connection.execute("INSTALL encodings")
     connection.execute("LOAD encodings")
