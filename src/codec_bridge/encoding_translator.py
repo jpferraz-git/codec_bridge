@@ -2,7 +2,7 @@ import charset_normalizer
 import os
 import re
 
-from repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
+from src.repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
 
 
 def get_duckdb_encoding(python_encoding_name: str) -> str:
@@ -113,29 +113,3 @@ def write_utf8_csv(file_path: str, new_csv_file_path: str):
         with open(new_csv_file_path, 'w', encoding='utf-8') as new_file:
             for line in file:
                 new_file.write(line)
-
-if __name__ == "__main__":
-    import duckdb
-    from tests.duckdb_utils import create_table_from_csv
-
-    csv_directory_path = "//tests/assets/"
-
-    connection = duckdb.connect(database=":memory:")
-
-    connection.execute("INSTALL encodings")
-    connection.execute("LOAD encodings")
-
-    detector = get_duckdb_encoding(csv_directory_path)
-
-    file_results = process_files(csv_directory_path)
-
-    for result in file_results:
-        create_table_from_csv(
-            conn=connection,
-            file_path=result["path"],
-            table_name=result["table_name"],
-            delimiter=result["delimiter"],
-            encoding=result["duckdb_encoding"]
-        )
-
-    connection.close()
