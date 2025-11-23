@@ -1,4 +1,4 @@
-## [2.0.0] - 2025-10-30
+## [0.2.1] - 2025-11-23
 
 ### Changed
-- Project structure updated to support imports using `import codec_bridge`
+- Project now runs onto `Python >= 3.11`

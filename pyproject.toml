@@ -1,13 +1,13 @@
 [project]
 name = "codec_bridge"
-version = "0.2.0"
+version = "0.2.1"
 description = "Detect encoding from CSV files and return the accepted case format for analytical tools (currently supports DuckDB)"
 authors = [
     { name = "João Pedro Ferraz Bezerra", email = "jpferraz554@gmail.com" }
 ]
 license = { file = "license.txt"}
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 
 dependencies = [
     "charset-normalizer>=3.4.2",
