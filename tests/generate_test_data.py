@@ -1,7 +1,6 @@
 import csv
 import os
 
-
 DEFAULT_OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "assets")
 
 def generate_csv_test_files(output_dir: str = DEFAULT_OUTPUT_DIR, num_rows: int = 1000):

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='codec_bridge',
-    version='0.2.1',
+    version='0.2.2',
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     description='Encoding and case normalization bridge for DuckDB and other engines',

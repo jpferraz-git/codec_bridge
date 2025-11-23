@@ -1,4 +1,4 @@
-## [0.2.1] - 2025-11-23
+## [0.2.2] - 2025-11-23
 
 ### Changed
-- Project now runs onto `Python >= 3.11`
+- Project Structure updated to resolve import conflicts
