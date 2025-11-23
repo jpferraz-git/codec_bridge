@@ -1,4 +1,4 @@
-## [0.2.2] - 2025-11-23
+## [0.2.3] - 2025-11-23
 
 ### Changed
-- Project Structure updated to resolve import conflicts
+- Transalte some Portuguese prints to English
