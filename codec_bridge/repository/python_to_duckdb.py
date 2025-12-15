@@ -34,6 +34,7 @@ PYTHON_TO_DUCKDB_ENCODING = {
     'latin-2': 'latin_2',
     'latin2': 'latin_2',
     'windows-1250': 'CP1250',
+    'windows_1250': 'CP1250',
     'cp1250': 'windows_1250',
     'cp852': 'cp852',
     "mac_iceland": "MAC_IS",
