@@ -1,4 +1,5 @@
-## [0.2.3] - 2025-11-23
+## [0.2.4] - 2025-11-23
 
 ### Changed
-- Transalte some Portuguese prints to English
+- Change prints to logger warning
+- Return 'utf-8' if the encoding is not mapped yet

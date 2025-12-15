@@ -1,9 +1,11 @@
 import charset_normalizer
 import os
 import re
+import logging
 
 from codec_bridge.repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
 
+logger = logging.getLogger(__name__)
 def get_duckdb_encoding(python_encoding_name: str) -> str:
     """
     Translates a Python-standard encoding name to the name expected by DuckDB.
@@ -13,10 +15,19 @@ def get_duckdb_encoding(python_encoding_name: str) -> str:
     :return: The translated encoding name for DuckDB (e.g., 'ibm-819').
     """
     if not python_encoding_name:
-        return 'utf-8'
+        return "utf-8"
 
-    normalized_name = python_encoding_name.lower()
-    return PYTHON_TO_DUCKDB_ENCODING.get(normalized_name, python_encoding_name)
+    normalized = python_encoding_name.lower()
+
+    duckdb_encoding = PYTHON_TO_DUCKDB_ENCODING.get(normalized)
+
+    if duckdb_encoding is None:
+        logger.warning(
+            f"Encoding {python_encoding_name} not mapped yet, falling back to utf-8"
+        )
+        return "utf-8"
+
+    return duckdb_encoding
 
 
 def detect_encoding(file_path: str, chunk: int = 1000000) -> str:
@@ -51,7 +62,7 @@ def detect_delimiter(file_path: str, encoding: str = "utf-8") -> str:
             if any(c > 0 for c in counts.values()):
                 detected_delimiter = max(counts, key=counts.get)
     except Exception as e:
-        print(f"[WARN] Could not detect delimiter for {os.path.basename(file_path)}: {e}")
+        logger.warning(f" Could not detect delimiter for {os.path.basename(file_path)}: {e}")
 
     return detected_delimiter
 
@@ -65,7 +76,7 @@ def process_files(directory_path: str) -> list[dict]:
     :return: A list of dictionaries, each containing metadata for a file.
     """
     if not os.path.isdir(directory_path):
-        print(f"Error: The directory '{directory_path}' does not exist.")
+        logger.warning(f"Error: The directory '{directory_path}' does not exist.")
         return []
 
     results = []
