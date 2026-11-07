@@ -5,9 +5,10 @@ description = "Detect encoding from CSV files and return the accepted case forma
 authors = [
     { name = "João Pedro Ferraz Bezerra", email = "jpferraz554@gmail.com" }
 ]
-license = { file = "license.txt"}
+license = { file = "license.txt" }
 readme = "README.md"
 requires-python = ">=3.11"
+keywords = ["duckdb", "encoding", "csv", "charset", "transcode"]
 
 dependencies = [
     "charset-normalizer>=3.4.2",
@@ -15,12 +16,47 @@ dependencies = [
 ]
 
 classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
     "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux"
+    "Operating System :: POSIX :: Linux",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "build",
+    "twine",
+]
+
+[project.urls]
+Homepage = "https://github.com/jpferraz-git/codec_bridge"
+Repository = "https://github.com/jpferraz-git/codec_bridge"
+Issues = "https://github.com/jpferraz-git/codec_bridge/issues"
+Changelog = "https://github.com/jpferraz-git/codec_bridge/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["codec_bridge*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "extension: tests that require DuckDB encodings extension (may require network)",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
