@@ -1,6 +1,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 from codec_bridge.encoding_translator import (
+    EncodingDetectionError,
     detect_delimiter,
     detect_encoding,
     get_duckdb_encoding,
@@ -15,6 +16,7 @@ except PackageNotFoundError:
     __version__ = "0.2.5"
 
 __all__ = [
+    "EncodingDetectionError",
     "__version__",
     "detect_delimiter",
     "detect_encoding",

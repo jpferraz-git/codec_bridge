@@ -1,3 +1,4 @@
+from pathlib import Path
 import charset_normalizer
 import os
 import re
@@ -6,6 +7,11 @@ import logging
 from codec_bridge.repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
 
 logger = logging.getLogger(__name__)
+
+
+class EncodingDetectionError(Exception):
+    """Raised when character encoding detection fails and strict mode is enabled."""
+
 def get_duckdb_encoding(python_encoding_name: str) -> str:
     """
     Translates a Python-standard encoding name to the name expected by DuckDB.
@@ -30,17 +36,61 @@ def get_duckdb_encoding(python_encoding_name: str) -> str:
     return duckdb_encoding
 
 
-def detect_encoding(file_path: str, chunk: int = 1000000) -> str:
-    """
-    Detects the character encoding of a file using charset_normalizer.
+def _has_c1_control_bytes(data: bytes) -> bool:
+    """Return True if data contains bytes in the 0x80-0x9F range."""
+    return any(0x80 <= b <= 0x9F for b in data)
 
-    :param file_path: The full path to the file.
+
+def detect_encoding(
+    file_path: str | os.PathLike,
+    chunk: int = 1000000,
+    strict: bool = False,
+) -> str:
+    """
+    Detects the character encoding of a file using BOM inspection and charset_normalizer.
+
+    :param file_path: The path to the file.
+    :param chunk: Maximum number of bytes to sample from the beginning of the file.
+    :param strict: If True, raise EncodingDetectionError when detection returns no match.
     :return: The detected encoding name as a string.
     """
     with open(file_path, "rb") as file:
         data_sample = file.read(chunk)
-        result = charset_normalizer.detect(data_sample)
-        return result.get("encoding") if result else "utf-8"
+        extra = file.read(1)
+
+    if not data_sample:
+        return "utf-8"
+
+    # 1. Check BOM first
+    if data_sample.startswith(b"\xef\xbb\xbf"):
+        return "utf-8-sig"
+    if data_sample.startswith((b"\xff\xfe\x00\x00", b"\x00\x00\xfe\xff")):
+        return "utf-32"
+    if data_sample.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return "utf-16"
+
+    # 2. Trim at the last newline when file was truncated by chunk so multibyte characters aren't split
+    if extra:
+        last_nl = max(data_sample.rfind(b"\n"), data_sample.rfind(b"\r"))
+        if last_nl > 0:
+            data_sample = data_sample[: last_nl + 1]
+
+    # 3. Run charset_normalizer.from_bytes(...).best()
+    best = charset_normalizer.from_bytes(data_sample).best()
+    if best is None or not best.encoding:
+        if strict:
+            raise EncodingDetectionError(f"Could not detect encoding for '{file_path}'")
+        return "utf-8"
+
+    detected = best.encoding.lower()
+
+    # 4. Heuristic: if iso-8859-1 / latin-1 / latin_1 / iso8859-1 and sample has 0x80..0x9F bytes, upgrade to cp1252
+    if detected in {"iso-8859-1", "iso_8859_1", "iso8859-1", "iso8859_1", "latin-1", "latin_1", "latin1"}:
+        if _has_c1_control_bytes(data_sample):
+            return "cp1252"
+
+    return detected
+
 
 def detect_delimiter(file_path: str, encoding: str = "utf-8") -> str:
     """
