@@ -16,10 +16,10 @@ class EncodingDetectionError(Exception):
 def get_duckdb_encoding(python_encoding_name: str) -> str:
     """
     Translates a Python-standard encoding name to the name expected by DuckDB.
-    If no specific mapping is found, it returns the original name as a fallback.
+    If no specific mapping is found, it logs a warning and returns 'utf-8' as a fallback.
 
     :param python_encoding_name: The encoding name detected (e.g., 'iso-8859-1').
-    :return: The translated encoding name for DuckDB (e.g., 'ibm-819').
+    :return: The translated encoding name for DuckDB (e.g., 'latin-1').
     """
     if not python_encoding_name:
         return "utf-8"
