@@ -71,11 +71,3 @@ PYTHON_TO_DUCKDB_ENCODING = {
     'cp949': 'cp949',
     'johab': 'johab',
 }
-
-ENCODINGS_UNDERSCORE_CONFLICT = {
-    'shift_jis',
-    'cp932',
-    'big5',
-    'gbk',
-    'gb2312',
-}

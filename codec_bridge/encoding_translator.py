@@ -1,10 +1,11 @@
+import csv
 from pathlib import Path
 import charset_normalizer
 import os
 import re
 import logging
 
-from codec_bridge.repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING, ENCODINGS_UNDERSCORE_CONFLICT
+from codec_bridge.repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING
 
 logger = logging.getLogger(__name__)
 
@@ -92,27 +93,48 @@ def detect_encoding(
     return detected
 
 
-def detect_delimiter(file_path: str, encoding: str = "utf-8") -> str:
+def detect_delimiter(
+    file_path: str | os.PathLike,
+    encoding: str | None = "utf-8",
+) -> str:
     """
-    Detects the most likely delimiter based on the first line of the file.
+    Detects the most likely delimiter in a CSV file using csv.Sniffer with header-count fallback.
 
-    :param file_path: The full path to the file.
-    :param encoding: The encoding to use when reading the file.
-    :return: The detected delimiter character.
+    :param file_path: The path to the file.
+    :param encoding: The encoding to use when reading the file (auto-detected if None).
+    :return: The detected delimiter character (one of ',', ';', '\\t', '|').
     """
-    possible_delimiters = [',', ';', '\t', '|']
-    detected_delimiter = ','  # Default to comma
-    if encoding.lower() in ENCODINGS_UNDERSCORE_CONFLICT:
-        return '|'
+    possible_delimiters = [",", ";", "\t", "|"]
+    detected_delimiter = ","
+
+    effective_encoding = encoding or detect_encoding(file_path)
+
     try:
-        with open(file_path, 'r', encoding=encoding, errors='replace') as f:
-            first_line = f.readline()
-            # Find the delimiter with the highest count in the header line
-            counts = {d: first_line.count(d) for d in possible_delimiters}
-            if any(c > 0 for c in counts.values()):
-                detected_delimiter = max(counts, key=counts.get)
+        with open(file_path, "r", encoding=effective_encoding, errors="replace", newline="") as f:
+            lines = []
+            for _ in range(20):
+                line = f.readline()
+                if not line:
+                    break
+                lines.append(line)
+
+        if not lines:
+            return detected_delimiter
+
+        sample = "".join(lines)
+        try:
+            dialect = csv.Sniffer().sniff(sample, delimiters="".join(possible_delimiters))
+            if dialect.delimiter in possible_delimiters:
+                return dialect.delimiter
+        except csv.Error:
+            pass
+
+        first_line = lines[0]
+        counts = {d: first_line.count(d) for d in possible_delimiters}
+        if any(c > 0 for c in counts.values()):
+            detected_delimiter = max(counts, key=lambda d: counts[d])
     except Exception as e:
-        logger.warning(f" Could not detect delimiter for {os.path.basename(file_path)}: {e}")
+        logger.warning(f"Could not detect delimiter for {os.path.basename(file_path)}: {e}")
 
     return detected_delimiter
 
