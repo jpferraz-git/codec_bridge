@@ -108,7 +108,6 @@ def process_files(directory_path: str) -> list[dict]:
     return results
 
 def write_utf8_csv(file_path: str, new_csv_file_path: str):
-
     """
     Rewrites a CSV file using UTF-8 encoding.
 
@@ -123,3 +122,8 @@ def write_utf8_csv(file_path: str, new_csv_file_path: str):
         with open(new_csv_file_path, 'w', encoding='utf-8') as new_file:
             for line in file:
                 new_file.write(line)
+
+
+def resolve_encoding(name: str | None, con=None, install_extension: bool = False):
+    """Resolve a Python encoding name for DuckDB."""
+    return get_duckdb_encoding(name or "utf-8")

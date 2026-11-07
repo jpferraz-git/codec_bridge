@@ -48,6 +48,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["codec_bridge*"]
 
+[tool.setuptools.package-data]
+codec_bridge = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
