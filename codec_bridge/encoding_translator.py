@@ -1,6 +1,9 @@
+import atexit
 import csv
 from pathlib import Path
+import tempfile
 import charset_normalizer
+import duckdb
 import os
 import re
 import logging
@@ -8,6 +11,7 @@ import logging
 from codec_bridge.resolver import (
     EncodingResolution,
     UnsupportedEncodingError,
+    _is_extension_loaded,
     normalize_name,
     resolve_encoding,
 )
@@ -251,4 +255,92 @@ def write_utf8_csv(
             outfile.write(block)
 
     return dst_path
+
+
+_TEMP_FILES_TO_CLEAN: list[Path] = []
+
+
+def _cleanup_temp_files() -> None:
+    for p in _TEMP_FILES_TO_CLEAN:
+        try:
+            p.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+atexit.register(_cleanup_temp_files)
+
+
+def read_csv_auto_encoding(
+    con: duckdb.DuckDBPyConnection,
+    path: str | os.PathLike,
+    *,
+    install_extension: bool = False,
+    **options,
+) -> duckdb.DuckDBPyRelation:
+    """
+    Detect a CSV file's encoding and delimiter, resolve the best DuckDB strategy,
+    and return a DuckDBPyRelation using parameterized SQL (`read_csv($path, ...)`).
+
+    If the encoding cannot be read directly by DuckDB on `con` (or if the `encodings`
+    extension is required for a static-map target and is not available), the file is
+    transparently transcoded to a temporary UTF-8 CSV file.
+
+    :param con: Active DuckDB connection.
+    :param path: Path to the CSV file.
+    :param install_extension: Whether to run `INSTALL encodings;` if the extension is missing.
+    :param options: Additional keyword options forwarded to DuckDB's `read_csv`.
+    :return: A DuckDBPyRelation representing the parsed CSV data.
+    """
+    src_path = Path(path)
+    opts = dict(options)
+
+    source_encoding = opts.pop("encoding", None) or detect_encoding(src_path)
+    if "delim" not in opts and "sep" not in opts:
+        opts["delim"] = detect_delimiter(src_path, encoding=source_encoding)
+
+    resolution = resolve_encoding(
+        source_encoding,
+        con=con,
+        install_extension=install_extension,
+        file_path=src_path,
+    )
+
+    use_transcode = resolution.strategy == "transcode" or resolution.duckdb_name is None
+    if (
+        not use_transcode
+        and resolution.strategy == "static_map"
+        and resolution.duckdb_name not in {"utf-8", "utf-16", "latin-1"}
+        and not _is_extension_loaded(con)
+    ):
+        use_transcode = True
+
+    if use_transcode:
+        fd, tmp_name = tempfile.mkstemp(prefix="codec_bridge_", suffix=".csv")
+        os.close(fd)
+        tmp_path = Path(tmp_name)
+        _TEMP_FILES_TO_CLEAN.append(tmp_path)
+        write_utf8_csv(src_path, tmp_path, source_encoding=source_encoding)
+        target_path = str(tmp_path)
+        target_encoding = "utf-8"
+    else:
+        target_path = str(src_path)
+        target_encoding = resolution.duckdb_name or "utf-8"
+
+    params: dict[str, object] = {
+        "path": target_path,
+        "encoding": target_encoding,
+    }
+    arg_clauses = ["$path", "encoding = $encoding"]
+
+    for idx, (key, val) in enumerate(opts.items()):
+        if not re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*$", key):
+            raise ValueError(f"Invalid read_csv option name: {key!r}")
+        param_name = f"opt_{idx}_{key}"
+        params[param_name] = val
+        arg_clauses.append(f"{key} = ${param_name}")
+
+    query = f"SELECT * FROM read_csv({', '.join(arg_clauses)})"
+    return con.sql(query, params=params)
+
 

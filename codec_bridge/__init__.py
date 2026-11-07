@@ -6,6 +6,7 @@ from codec_bridge.encoding_translator import (
     detect_encoding,
     get_duckdb_encoding,
     process_files,
+    read_csv_auto_encoding,
     write_utf8_csv,
 )
 from codec_bridge.resolver import (
@@ -30,6 +31,7 @@ __all__ = [
     "get_duckdb_encoding",
     "normalize_name",
     "process_files",
+    "read_csv_auto_encoding",
     "resolve_encoding",
     "write_utf8_csv",
 ]
