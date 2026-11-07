@@ -138,35 +138,58 @@ def detect_delimiter(
 
     return detected_delimiter
 
-def process_files(directory_path: str) -> list[dict]:
-    """
-    Iterates through all CSV files in the instance's directory, detects their
-    properties (encoding, delimiter), and stores them as metadata.
+def _sanitize_table_name(stem: str, used_names: set[str]) -> str:
+    """Create a valid, collision-free SQL table identifier from a filename stem."""
+    base = re.sub(r"[^a-zA-Z0-9_]", "_", stem)
+    if not base:
+        base = "t_"
+    elif base[0].isdigit():
+        base = f"t_{base}"
 
-    This method acts as a utility to scan and prepare a batch of files.
+    candidate = base
+    counter = 2
+    while candidate in used_names:
+        candidate = f"{base}_{counter}"
+        counter += 1
 
-    :return: A list of dictionaries, each containing metadata for a file.
+    used_names.add(candidate)
+    return candidate
+
+
+def process_files(
+    directory_path: str | os.PathLike,
+    recursive: bool = False,
+) -> list[dict]:
     """
-    if not os.path.isdir(directory_path):
+    Scans CSV files in a directory, detects their encoding and delimiter, and returns metadata.
+
+    :param directory_path: Path to the directory to scan.
+    :param recursive: If True, scan subdirectories recursively.
+    :return: A sorted list of dictionaries containing metadata for each CSV file.
+    """
+    dir_path = Path(directory_path)
+    if not dir_path.is_dir():
         logger.warning(f"Error: The directory '{directory_path}' does not exist.")
         return []
 
+    iterator = dir_path.rglob("*") if recursive else dir_path.iterdir()
+    csv_files = sorted(
+        (p for p in iterator if p.is_file() and p.suffix.lower() == ".csv"),
+        key=lambda p: str(p.relative_to(dir_path)),
+    )
+
     results = []
-    for filename in os.listdir(directory_path):
-        if not filename.lower().endswith('.csv'):
-            continue
+    used_names: set[str] = set()
 
-        file_path = os.path.join(directory_path, filename)
+    for file_path_obj in csv_files:
+        filename = file_path_obj.name
+        file_path = str(file_path_obj)
 
-        # Detect properties
         python_encoding = detect_encoding(file_path)
         delimiter = detect_delimiter(file_path, encoding=python_encoding)
-
-        # Translate encoding for the target enconding case
+        resolution = resolve_encoding(python_encoding)
         duckdb_encoding = get_duckdb_encoding(python_encoding)
-
-        # Sanitize filename to create a valid table name
-        table_name = re.sub(r'[^a-zA-Z0-9_]', '_', os.path.splitext(filename)[0])
+        table_name = _sanitize_table_name(file_path_obj.stem, used_names)
 
         results.append({
             "filename": filename,
@@ -174,7 +197,8 @@ def process_files(directory_path: str) -> list[dict]:
             "python_encoding": python_encoding,
             "duckdb_encoding": duckdb_encoding,
             "delimiter": delimiter,
-            "table_name": table_name
+            "table_name": table_name,
+            "resolution": resolution,
         })
 
     return results
