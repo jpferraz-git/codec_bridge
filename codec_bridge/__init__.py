@@ -6,8 +6,13 @@ from codec_bridge.encoding_translator import (
     detect_encoding,
     get_duckdb_encoding,
     process_files,
-    resolve_encoding,
     write_utf8_csv,
+)
+from codec_bridge.resolver import (
+    EncodingResolution,
+    UnsupportedEncodingError,
+    normalize_name,
+    resolve_encoding,
 )
 
 try:
@@ -17,10 +22,13 @@ except PackageNotFoundError:
 
 __all__ = [
     "EncodingDetectionError",
+    "EncodingResolution",
+    "UnsupportedEncodingError",
     "__version__",
     "detect_delimiter",
     "detect_encoding",
     "get_duckdb_encoding",
+    "normalize_name",
     "process_files",
     "resolve_encoding",
     "write_utf8_csv",

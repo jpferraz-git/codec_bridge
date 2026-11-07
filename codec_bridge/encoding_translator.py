@@ -5,7 +5,12 @@ import os
 import re
 import logging
 
-from codec_bridge.repository.python_to_duckdb import PYTHON_TO_DUCKDB_ENCODING
+from codec_bridge.resolver import (
+    EncodingResolution,
+    UnsupportedEncodingError,
+    normalize_name,
+    resolve_encoding,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -13,28 +18,29 @@ logger = logging.getLogger(__name__)
 class EncodingDetectionError(Exception):
     """Raised when character encoding detection fails and strict mode is enabled."""
 
-def get_duckdb_encoding(python_encoding_name: str) -> str:
+
+def get_duckdb_encoding(python_encoding_name: str | None, strict: bool = False) -> str:
     """
     Translates a Python-standard encoding name to the name expected by DuckDB.
-    If no specific mapping is found, it logs a warning and returns 'utf-8' as a fallback.
+    If no specific mapping is found, it logs a warning and returns 'utf-8' as a fallback
+    (or raises UnsupportedEncodingError when strict=True).
 
     :param python_encoding_name: The encoding name detected (e.g., 'iso-8859-1').
-    :return: The translated encoding name for DuckDB (e.g., 'latin-1').
+    :param strict: If True, raise UnsupportedEncodingError when the encoding resolves to transcode.
+    :return: The translated encoding name for DuckDB (e.g., 'ISO_8859_1').
     """
-    if not python_encoding_name:
-        return "utf-8"
-
-    normalized = python_encoding_name.lower()
-
-    duckdb_encoding = PYTHON_TO_DUCKDB_ENCODING.get(normalized)
-
-    if duckdb_encoding is None:
+    resolution = resolve_encoding(python_encoding_name)
+    if resolution.strategy == "transcode" or resolution.duckdb_name is None:
+        if strict:
+            raise UnsupportedEncodingError(
+                f"Encoding '{python_encoding_name}' is not directly supported by DuckDB"
+            )
         logger.warning(
             f"Encoding {python_encoding_name} not mapped yet, falling back to utf-8"
         )
         return "utf-8"
 
-    return duckdb_encoding
+    return resolution.duckdb_name
 
 
 def _has_c1_control_bytes(data: bytes) -> bool:
@@ -187,8 +193,12 @@ def process_files(
 
         python_encoding = detect_encoding(file_path)
         delimiter = detect_delimiter(file_path, encoding=python_encoding)
-        resolution = resolve_encoding(python_encoding)
-        duckdb_encoding = get_duckdb_encoding(python_encoding)
+        resolution = resolve_encoding(python_encoding, file_path=file_path)
+        duckdb_encoding = (
+            resolution.duckdb_name
+            if resolution.duckdb_name is not None
+            else get_duckdb_encoding(python_encoding)
+        )
         table_name = _sanitize_table_name(file_path_obj.stem, used_names)
 
         results.append({
@@ -242,7 +252,3 @@ def write_utf8_csv(
 
     return dst_path
 
-
-def resolve_encoding(name: str | None, con=None, install_extension: bool = False):
-    """Resolve a Python encoding name for DuckDB."""
-    return get_duckdb_encoding(name or "utf-8")
