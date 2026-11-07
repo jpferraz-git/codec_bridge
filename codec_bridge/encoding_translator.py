@@ -179,21 +179,44 @@ def process_files(directory_path: str) -> list[dict]:
 
     return results
 
-def write_utf8_csv(file_path: str, new_csv_file_path: str):
+def write_utf8_csv(
+    src: str | os.PathLike,
+    dst: str | os.PathLike,
+    source_encoding: str | None = None,
+    errors: str = "strict",
+) -> Path:
     """
-    Rewrites a CSV file using UTF-8 encoding.
+    Transcodes a CSV file from its source encoding to UTF-8 without modifying line endings.
 
-    This method is intended for cases where, even after DuckDB's encoding detection,
-    the file is still incorrectly interpreted when inserted into the database.
-
-    :param file_path: Path to the original CSV file.
-    :param new_csv_file_path: Path where the UTF-8 encoded CSV will be saved.
-    :return: None. The UTF-8 encoded file is written to disk.
+    :param src: Path to the source CSV file.
+    :param dst: Path where the UTF-8 encoded CSV will be saved (must differ from src).
+    :param source_encoding: Source encoding name (auto-detected if None).
+    :param errors: Error handling scheme passed to open() (default: 'strict').
+    :return: The destination Path.
     """
-    with open(file_path, 'r') as file:
-        with open(new_csv_file_path, 'w', encoding='utf-8') as new_file:
-            for line in file:
-                new_file.write(line)
+    src_path = Path(src)
+    dst_path = Path(dst)
+
+    if src_path.resolve() == dst_path.resolve():
+        raise ValueError("Destination path must not be the same as source path.")
+    if dst_path.exists() and src_path.exists() and os.path.samefile(src_path, dst_path):
+        raise ValueError("Destination path must not be the same file as source path.")
+
+    enc = source_encoding or detect_encoding(src_path)
+    dst_path.parent.mkdir(parents=True, exist_ok=True)
+
+    chunk_size = 64 * 1024
+    with (
+        open(src_path, "r", encoding=enc, errors=errors, newline="") as infile,
+        open(dst_path, "w", encoding="utf-8", errors=errors, newline="") as outfile,
+    ):
+        while True:
+            block = infile.read(chunk_size)
+            if not block:
+                break
+            outfile.write(block)
+
+    return dst_path
 
 
 def resolve_encoding(name: str | None, con=None, install_extension: bool = False):
