@@ -5,7 +5,7 @@ description = "Detect encoding from CSV files and return the accepted case forma
 authors = [
     { name = "João Pedro Ferraz Bezerra", email = "jpferraz554@gmail.com" }
 ]
-license = { file = "license.txt" }
+license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = ["duckdb", "encoding", "csv", "charset", "transcode"]
